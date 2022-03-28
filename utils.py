@@ -107,7 +107,6 @@ def rToW(R):
         pass  # same as default
     elif np.trace(R) == -1:
         theta = np.pi
-        # TODO: not sure if it's corret?
         # only choose one to return
         if np.sqrt(2*(1+R[2, 2])) != 0:
             omega_hat = 1 / \
@@ -242,16 +241,11 @@ def twistToT(twist):
 
         omega_hat, theta = normalize(omega)
         skewW_hat = wToSkew(omega_hat)
-        # TODO: this equation seems wrong
         p = 1/theta * (theta * np.eye(3) +
-                       (1-np.cos(theta)*skewW_hat + (theta-np.sin(theta))
+                       ((1-np.cos(theta))*skewW_hat + (theta-np.sin(theta))
                         * skewW_hat @ skewW_hat)
                        ) @ v
-        # TODO: this seems to work
-        v_hat = v/theta
-        p = (np.eye(3) - R)@(skewW_hat@v_hat) + \
-            omega_hat @ (omega_hat.T) @ v_hat * theta
-
+        
     T[0:3, 0:3] = R
     T[0:3, [3]] = p
 
