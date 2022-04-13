@@ -245,7 +245,7 @@ def twistToT(twist):
                        ((1-np.cos(theta))*skewW_hat + (theta-np.sin(theta))
                         * skewW_hat @ skewW_hat)
                        ) @ v
-        
+
     T[0:3, 0:3] = R
     T[0:3, [3]] = p
 
@@ -288,3 +288,45 @@ def TtoAdt(T):
     Ad_T[3:, 0:3] = wToSkew(p) @ R
 
     return Ad_T
+
+
+def screwsToJs(screws, thetas):
+    """
+    turn space screws into space Jacobian
+
+    screws and thetas: list of screw and theta
+    screw shape: (6, 1)
+    thetas shpae: (n, 1)
+    """
+
+    # two list must have same length
+    assert len(screws) == len(thetas)
+
+    Jacobian = []
+    temp_j = np.eye(6)
+    for i in range(len(screws)):
+        Jacobian.append(temp_j @ screws[i])
+        temp_j = temp_j @ TtoAdt(twistToT(screws[i] * thetas[i, 0]))
+    Jacobian = np.hstack(Jacobian)
+    return Jacobian
+
+
+def screwsToJb(screws, thetas):
+    """
+    turn body screws into body Jacobian
+    """
+    
+    # two list must have same length
+    assert len(screws) == len(thetas)
+
+    # reverse screws and thetas
+    screws = screws[::-1]
+    thetas = thetas[::-1]
+
+    Jacobian = []
+    temp_j = np.eye(6)
+    for i in range(len(screws)):
+        Jacobian.append(temp_j @ screws[i])
+        temp_j = temp_j @ TtoAdt(twistToT(-screws[i] * thetas[i, 0]))
+    Jacobian = np.hstack(Jacobian[::-1])
+    return Jacobian
